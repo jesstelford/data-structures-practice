@@ -1,73 +1,137 @@
-Lists = require("./lists.js");
+var Lists = require("./lists.js"),
+    assert = require("assert");
 
-var list = new Lists.LinkedList();
+describe('Linked Lists', function() {
 
-console.log(list.findMthLast(0)); // null
-console.log(list.findMthLast(1)); // null
-console.log(list.findMthLast(4)); // null
+	describe('Singly Linked', function() {
 
-list.push(10);
+		describe('Finding Mth Last Element', function() {
 
-console.log(list.findMthLast(0)); // 10
-console.log(list.findMthLast(1)); // null
-console.log(list.findMthLast(4)); // null
+			beforeEach(function() {
+				this.list = new Lists.LinkedList();
+			});
 
-list.push(11);
-list.push(12);
-list.push(13);
-list.push(14);
-list.push(15);
-list.push(16);
+			it('returns null when no elements exist', function() {
 
-console.log(list.findMthLast(0)); // 10
-console.log(list.findMthLast(1)); // 11
-console.log(list.findMthLast(4)); // 14
-console.log(list.findMthLast(6)); // 16
-console.log(list.findMthLast(7)); // null
+				assert.equal(null, this.list.findMthLast(0));
+				assert.equal(null, this.list.findMthLast(1));
+				assert.equal(null, this.list.findMthLast(4));
 
-console.log("---- Doubly Linked Lists ----");
+			});
 
-var doubleList = new Lists.DoublyLinkedList();
+			it('returns first element when list contains single element', function() {
 
-doubleList.push(10);
+				this.list.push(10);
 
-console.log(doubleList.head.value); // 10
-console.log(doubleList.tail.value); // 10
+				assert.equal(10, this.list.findMthLast(0));
+				assert.equal(null, this.list.findMthLast(1));
+				assert.equal(null, this.list.findMthLast(4));
 
-doubleList.push(11);
+			});
 
-console.log(doubleList.head.value); // 11
-console.log(doubleList.tail.value); // 10
+			it('returns correct elements at start, end, and within list', function() {
 
-doubleList.pushBack(9);
+				this.list.push(10);
+				this.list.push(11);
+				this.list.push(12);
+				this.list.push(13);
+				this.list.push(14);
+				this.list.push(15);
+				this.list.push(16);
 
-console.log(doubleList.head.value); // 11
-console.log(doubleList.head.next.value); // 10
-console.log(doubleList.tail.prev.value); // 10
-console.log(doubleList.tail.value); // 9
+				assert.equal(10, this.list.findMthLast(0));
+				assert.equal(11, this.list.findMthLast(1));
+				assert.equal(14, this.list.findMthLast(4));
+				assert.equal(16, this.list.findMthLast(6));
+				assert.equal(null, this.list.findMthLast(7));
 
-console.log("---- Doubly Linked Lists Cycle Checking ----");
+			});
+		})
+	});
 
-var cycleList = new Lists.DoublyLinkedList();
+	describe('Doubly Linked', function() {
 
-console.log(cycleList.hasCycle()); // false
+		beforeEach(function() {
+			this.doubleList = new Lists.DoublyLinkedList();
+		});
 
-cycleList.push(10);
+		describe('construction', function() {
 
-console.log(cycleList.hasCycle()); // false
+			it('points both head and tail at single item', function() {
 
-cycleList.tail.next = cycleList.head;
+				this.doubleList.push(10);
 
-console.log(cycleList.hasCycle()); // true
+				assert.equal(10, this.doubleList.head.value);
+				assert.equal(10, this.doubleList.tail.value);
 
-cycleList.tail.next = null;
-cycleList.push(11);
-cycleList.push(12);
-cycleList.push(13);
-cycleList.tail.next = cycleList.head;
+			});
 
-console.log(cycleList.hasCycle()); // true
+			it('points head and tail at correct items when 2 items in list', function() {
 
-cycleList.tail.next = cycleList.head.next.next;
+				this.doubleList.push(10);
+				this.doubleList.push(11);
 
-console.log(cycleList.hasCycle()); // true
+				assert.equal(11, this.doubleList.head.value);
+				assert.equal(10, this.doubleList.tail.value);
+
+			});
+
+			it('inserts item at back correctly', function() {
+
+				this.doubleList.push(10);
+				this.doubleList.push(11);
+				this.doubleList.pushBack(9);
+
+				assert.equal(11, this.doubleList.head.value);
+				assert.equal(10, this.doubleList.head.next.value);
+				assert.equal(10, this.doubleList.tail.prev.value);
+				assert.equal(9, this.doubleList.tail.value);
+
+			});
+		});
+
+		describe('cycle checking', function() {
+
+			var forceCircular = function(list) {
+				list.tail.next = list.head;
+				list.head.prev = list.tail;
+			}
+
+			it('has no cycle when empty', function() {
+				assert.equal(false, this.doubleList.hasCycle());
+			});
+
+			it('has no cycle when single item pushed', function() {
+				this.doubleList.push(10);
+				assert.equal(false, this.doubleList.hasCycle());
+			});
+
+			it('correcrly detects cycle on single item', function() {
+				this.doubleList.push(10);
+				forceCircular(this.doubleList);
+				assert.equal(true, this.doubleList.hasCycle());
+			});
+
+			it('detects circular cycle on multiple items list', function() {
+
+				this.doubleList.push(10);
+				this.doubleList.push(11);
+				this.doubleList.push(12);
+				this.doubleList.push(13);
+				forceCircular(this.doubleList);
+				assert.equal(true, this.doubleList.hasCycle());
+			});
+
+			it('detects partial cycle on multiple items list', function() {
+				this.doubleList.push(10);
+				this.doubleList.push(11);
+				this.doubleList.push(12);
+				this.doubleList.push(13);
+
+				this.doubleList.tail.next = this.doubleList.head.next.next;
+				assert.equal(true, this.doubleList.hasCycle());
+			});
+		});
+	});
+
+});
